@@ -1,11 +1,7 @@
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex">
 
@@ -24,3 +20,5 @@ export default function AdminLayout({
     </div>
   );
 }
+
+export default AdminLayout;

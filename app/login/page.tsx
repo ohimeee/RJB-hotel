@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+const LoginPage = () => {
   const router = useRouter();
 
-  function handleLogin() {
+  const handleLogin = () => {
     router.push("/admin/dashboard");
-  }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -39,3 +39,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

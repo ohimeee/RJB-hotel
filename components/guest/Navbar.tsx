@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function Navbar() {
+const Navbar = () => {
   return (
     <nav className="flex justify-between bg-white border-b px-8 py-4 text-black">
       <h1 className="text-sm">
@@ -15,3 +15,5 @@ export default function Navbar() {
     </nav>
   );
 }
+
+export default Navbar;

@@ -1,10 +1,10 @@
 import Navbar from "@/components/guest/Navbar";
 
-export default function GuestLayout({
+const GuestLayout = ({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) => {
   return (
     <>
       <Navbar />
@@ -16,3 +16,5 @@ export default function GuestLayout({
     </>
   );
 }
+
+export default GuestLayout;

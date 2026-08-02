@@ -1,4 +1,4 @@
-export default function HomePage() {
+const HomePage = () => {
   return (
     <>
       <h1 className="mb-5 text-4xl font-bold">
@@ -11,3 +11,5 @@ export default function HomePage() {
     </>
   );
 }
+
+export default HomePage;

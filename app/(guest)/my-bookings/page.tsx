@@ -1,11 +1,13 @@
-export default function RoomsPage() {
+const BookingsPage = () => {
   return (
     <>
       <h1 className="mb-5 text-3xl font-bold">
-        Available Rooms
+        My Bookings
       </h1>
 
-      <p>Room catalog goes here.</p>
+      <p>Your upcoming and past bookings will be displayed here.</p>
     </>
   );
 }
+
+export default BookingsPage;

@@ -1,4 +1,4 @@
-export default function RoomsPage() {
+const RoomsPage = () => {
   return (
     <>
       <h1 className="mb-4 text-3xl font-bold">
@@ -9,3 +9,5 @@ export default function RoomsPage() {
     </>
   );
 }
+
+export default RoomsPage;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function Sidebar() {
+const Sidebar = () => {
   return (
     <aside className="min-h-screen w-64 bg-gray-900 p-5 text-white">
 
@@ -27,3 +27,5 @@ export default function Sidebar() {
     </aside>
   );
 }
+
+export default Sidebar;

@@ -1,4 +1,4 @@
-export default function Topbar() {
+const Topbar = () => {
   return (
     <header className="border-b p-5">
 
@@ -9,3 +9,5 @@ export default function Topbar() {
     </header>
   );
 }
+
+export default Topbar;
