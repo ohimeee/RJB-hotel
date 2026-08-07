@@ -1,4 +1,4 @@
-import SearchBar from "@/components/guest/InfoBar";
+import InfoBar from "@/components/guest/InfoBar";
 import RoomCard from "@/components/guest/RoomCard";
 
 const HomePage = () => {
@@ -9,7 +9,7 @@ const HomePage = () => {
         <h1 className="text-4xl font-bold">Rooms & suites</h1>
       </div>
 
-      <SearchBar />
+      <InfoBar />
       <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
         {/* use map here*/}
         <RoomCard/>
