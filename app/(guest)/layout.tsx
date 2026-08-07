@@ -9,7 +9,7 @@ const GuestLayout = ({
     <>
       <Navbar />
 
-      <main className="min-h-screen p-10">
+      <main className="min-h-screen mx-80">
         {children}
       </main>
 

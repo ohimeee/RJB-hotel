@@ -1,13 +1,14 @@
 const BookingsPage = () => {
   return (
-    <>
-      <h1 className="mb-5 text-3xl font-bold">
-        My Bookings
-      </h1>
-
-      <p>Your upcoming and past bookings will be displayed here.</p>
-    </>
+    <div className="flex-col">
+      <div className="border-b-2 py-5">
+        <p className="text-xs font-medium text-orange-500">
+          RESERVATION CHEKOUT
+        </p>
+        <h1 className="text-4xl font-bold">Review & confirm</h1>
+      </div>
+    </div>
   );
-}
+};
 
 export default BookingsPage;

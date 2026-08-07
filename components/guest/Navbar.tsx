@@ -1,16 +1,16 @@
-import Link from "next/link";
+import NavLink from "@/components/guest/NavLink";
 
 const Navbar = () => {
   return (
-    <nav className="flex justify-between bg-white border-b px-8 py-4 text-black">
-      <h1 className="text-sm">
+    <nav className="flex justify-between items-center bg-white border-b px-8 py-2 text-black">
+      <h1 className="text-lg font-bold tracking-tight">
         InnKeep Express
       </h1>
 
       <div className="flex gap-6 text-sm">
-        <Link href="/">Rooms</Link>
+        <NavLink href="/">Rooms</NavLink>
 
-        <Link href="/my-bookings">My Bookings</Link>
+        <NavLink href="/my-bookings">My Bookings</NavLink>
       </div>
     </nav>
   );
