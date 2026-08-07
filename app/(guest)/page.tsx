@@ -1,4 +1,5 @@
-import SearchBar from "@/components/guest/SearchBar";
+import SearchBar from "@/components/guest/InfoBar";
+import RoomCard from "@/components/guest/RoomCard";
 
 const HomePage = () => {
   return (
@@ -9,6 +10,15 @@ const HomePage = () => {
       </div>
 
       <SearchBar />
+      <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {/* use map here*/}
+        <RoomCard/>
+        <RoomCard/>
+        <RoomCard/>
+        <RoomCard/>
+        <RoomCard/>
+        <RoomCard/>
+      </div>
     </div>
   );
 };
