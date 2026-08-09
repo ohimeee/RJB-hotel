@@ -48,3 +48,6 @@ next-env.d.ts
 /.agents/skills
 /.windsurf/skills
 /skills-lock.json
+
+# local planning notes
+/IMPLEMENTATION.md

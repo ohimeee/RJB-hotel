@@ -1,48 +1,53 @@
+import Link from "next/link";
 import { UserRound } from "lucide-react";
 import { MoveRight } from "lucide-react";
 
-const RoomCard = () => {
+import { typeLabel, type RoomCardData } from "@/lib/rooms";
+
+const RoomCard = ({ room, href }: { room: RoomCardData; href: string }) => {
   return (
     <div className="relative flex aspect-6/5 w-full flex-col">
       <div className="absolute top-0 left-0 bg-orange-500 p-2 text-xs font-semibold tracking-widest text-white">
-        Suite
+        {typeLabel(room.type)}
       </div>
 
       <div className="h-1/2 overflow-hidden">
         <img
           className="h-full w-full object-cover"
-          src="https://picsum.photos/200"
-          alt="random_pic"
+          src={room.imageUrl ?? "https://picsum.photos/200"}
+          alt={room.name}
         />
       </div>
 
       <div className="flex-col space-y-2 bg-gray-200 p-3">
-        <span className="text-lg font-bold">The Garret Suite</span>
+        <span className="text-lg font-bold">{room.name}</span>
 
         <div className="flex items-center gap-2">
           <UserRound className="size-3" />
-          <span className="text-xs text-gray-500">Sleeps 2</span>
+          <span className="text-xs text-gray-500">Sleeps {room.capacity}</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {/* use map here*/}
-          <span className="bg-white px-2 py-1 text-xs">King Bed</span>
-          <span className="bg-white px-2 py-1 text-xs">King Bed</span>
-          <span className="bg-white px-2 py-1 text-xs">King Bed</span>
-          <span className="bg-white px-2 py-1 text-xs">King Bed</span>
+          {room.amenities.map((amenity) => (
+            <span key={amenity} className="bg-white px-2 py-1 text-xs">
+              {amenity}
+            </span>
+          ))}
         </div>
 
         <div className="flex items-center justify-between border-t-2">
           <div>
-            <p className="text-xl font-bold">P8,900</p>
+            <p className="text-xl font-bold">{room.nightlyRateLabel}</p>
             <p className="text-xs text-gray-500">per night</p>
           </div>
-          <div className="flex items-center gap-1 bg-orange-500 p-2 text-xs font-semibold tracking-widest text-white">
+          <Link
+            href={href}
+            className="flex items-center gap-1 bg-orange-500 p-2 text-xs font-semibold tracking-widest text-white"
+          >
             <span>Book Now</span>
             <MoveRight className="size-3" />
-          </div>
+          </Link>
         </div>
-        
       </div>
     </div>
   );

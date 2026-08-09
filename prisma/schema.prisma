@@ -33,9 +33,12 @@ enum ReservationStatus {
 model Room {
   id           String        @id @default(cuid())
   number       String        @unique
+  name         String
   type         RoomType
   capacity     Int
   amenities    String[]
+  description  String?
+  imageUrl     String?
   nightlyRate  Decimal       @db.Decimal(10, 2)
   status       RoomStatus    @default(AVAILABLE)
   reservations Reservation[]
