@@ -41,13 +41,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/app/generated/prisma
-
-# AI tool skill docs (auto-added by prisma init)
-/.claude/skills
-/.agents/skills
-/.windsurf/skills
-/skills-lock.json
-
 # local planning notes
 /IMPLEMENTATION.md

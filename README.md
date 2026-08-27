@@ -14,7 +14,7 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
 - [Next.js](https://nextjs.org) (App Router) + TypeScript
 - [Tailwind CSS](https://tailwindcss.com) v4
 - [PostgreSQL](https://www.postgresql.org)
-- [Prisma](https://www.prisma.io) ORM (driver adapter: `@prisma/adapter-pg`)
+- [node-postgres](https://node-postgres.com) (`pg`) — hand-written SQL, no ORM
 
 ## Getting Started
 
@@ -40,10 +40,14 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
    cp .env.example .env
    ```
 
-4. Apply migrations and generate the Prisma client:
+4. Create the tables, then load the sample rooms:
    ```bash
-   npx prisma migrate dev
+   npm run db:setup
+   npm run db:seed
    ```
+
+   Both are safe to re-run. `db:setup` only creates what is missing, and
+   `db:seed` upserts rooms on their room number.
 
 5. Run the dev server:
    ```bash
@@ -55,8 +59,11 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
 ## Project Structure
 
 ```
-app/                  Next.js App Router pages + API routes
-lib/prisma.ts         Prisma Client singleton
-prisma/schema.prisma  Data model (Room, Reservation, Charge)
-prisma/migrations/    Migration history
+app/             Next.js App Router pages
+components/      UI components (guest + admin)
+lib/db.ts        Postgres connection pool + query helpers
+lib/types.ts     TypeScript mirrors of the database enums
+db/schema.sql    Data model (Room, Reservation, Charge)
+db/seed.sql      Sample rooms
+scripts/db.mjs   Runs a .sql file against DATABASE_URL
 ```

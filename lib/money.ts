@@ -1,17 +1,16 @@
-// Money is `Decimal` in Postgres and a string everywhere above it.
+// Money is `DECIMAL(10,2)` in Postgres and a string everywhere above it.
 //
-// Two rules hold the line:
-//   1. `Prisma.Decimal` is not serializable across the server/client boundary —
-//      passing one into a client component throws at runtime.
-//   2. Never `Number(decimal)`. That reintroduces float error into currency.
-//
-// So Decimals convert to strings once, here, and stay strings.
+// node-postgres hands NUMERIC columns back as strings for exactly one reason:
+// `Number("8900.00")` reintroduces float error into currency, and a bill that
+// is off by a centavo is a bill the front desk has to explain. So pesos stay
+// strings from the driver to the screen, and arithmetic happens in integer
+// centavos — see lib/pricing.ts.
 
-/** Structural, so this file does not import from the generated client. */
-type DecimalLike = { toFixed: (digits: number) => string };
-
-/** Decimal -> "8900.00". The canonical wire format. */
-export const toMoney = (value: DecimalLike): string => value.toFixed(2);
+/** "8900.00" -> "8900.00". Normalises whatever the column gave us. */
+export const toMoney = (value: string): string => {
+  const [whole = "0", cents = ""] = value.split(".");
+  return `${whole}.${cents.slice(0, 2).padEnd(2, "0")}`;
+};
 
 const groupDigits = (digits: string): string =>
   digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -20,8 +19,8 @@ const groupDigits = (digits: string): string =>
  * "8900.00" -> "₱8,900" (or "₱8,900.50" when there are real centavos).
  * Operates on the string, so no float ever touches a peso amount.
  */
-export const formatPeso = (value: DecimalLike | string): string => {
-  const raw = typeof value === "string" ? value : toMoney(value);
+export const formatPeso = (value: string): string => {
+  const raw = toMoney(value);
   const negative = raw.startsWith("-");
   const [whole = "0", cents = "00"] = raw.replace("-", "").split(".");
 
