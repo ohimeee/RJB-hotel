@@ -9,6 +9,7 @@
     "start": "next start",
     "db:setup": "node scripts/db.mjs db/schema.sql",
     "db:seed": "node scripts/db.mjs db/seed.sql",
+    "xendit:check": "node scripts/xendit-check.mjs",
     "lint": "eslint"
   },
   "dependencies": {
