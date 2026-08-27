@@ -15,6 +15,7 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
 - [Tailwind CSS](https://tailwindcss.com) v4
 - [PostgreSQL](https://www.postgresql.org)
 - [node-postgres](https://node-postgres.com) (`pg`) — hand-written SQL, no ORM
+- [Xendit](https://www.xendit.co) — hosted checkout for GCash, Maya, GrabPay and cards
 
 ## Getting Started
 
@@ -22,6 +23,8 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
 
 - Node.js
 - PostgreSQL running locally (or a connection string to a hosted instance)
+- A [Xendit](https://dashboard.xendit.co) account for payments — test mode needs
+  only an email, no business documents
 
 ### Setup
 
@@ -40,6 +43,13 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
    cp .env.example .env
    ```
 
+   For payments, add your Xendit **test** credentials from the dashboard:
+   `XENDIT_SECRET_KEY` (Settings → Developers → generate a secret key with
+   Money-in = Write) and `XENDIT_CALLBACK_TOKEN` (Settings → Webhooks → view
+   verification token). The secret key must start with `xnd_development_` — a
+   `xnd_production_` key moves real money. Never put either behind
+   `NEXT_PUBLIC_`; that ships the value to the browser.
+
 4. Create the tables, then load the sample rooms:
    ```bash
    npm run db:setup
@@ -55,6 +65,22 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
    ```
 
    Open [http://localhost:3000](http://localhost:3000).
+
+### Testing payments
+
+Xendit's servers cannot reach `localhost`, so payment webhooks never arrive in
+development and bookings never confirm. Run a tunnel alongside the dev server:
+
+```bash
+ngrok http 3000
+```
+
+Register the URL it prints in Dashboard → Settings → Webhooks. A free ngrok
+account gets one permanent domain, so that registration is a one-time step.
+
+In test mode no real money moves. E-wallet payments land on a Xendit simulator
+page where you choose **Authorize** or **Fail** — no real GCash account needed.
+Test card numbers are listed in the Xendit dashboard.
 
 ## Project Structure
 
