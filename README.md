@@ -1,155 +1,153 @@
 # InnKeep Express
 
-Lightweight hotel reservation and room management app for boutique hotels, inns, or student projects. Covers the guest lifecycle: room search, date-range booking, check-in/check-out, and incidental billing.
+A lightweight hotel reservation and room management application for boutique
+hotels, inns, or student projects. Covers the core guest lifecycle: searching
+available rooms, making date-range reservations, handling check-in/check-out
+workflows, and billing additional incidental charges.
 
-## Features
+## Core Features
 
-- **Room Catalog & Availability** — browse rooms by type (Standard/Deluxe/Suite), search by check-in/check-out dates, auto-filter out double-booked rooms
-- **Reservations** — book a room for a date range, auto-calculate stay total, track status (`CONFIRMED` → `CHECKED_IN` → `CHECKED_OUT` / `CANCELLED`)
-- **Check-In / Check-Out** — front desk updates room status (`AVAILABLE` ↔ `OCCUPIED`)
-- **Incidental Billing** — add extra charges (room service, minibar, laundry, etc.) to a stay, generate final folio
+### Feature 1 · Room Catalog & Availability Search
+
+- **Room Directory** — browse rooms grouped by room type (Standard, Deluxe,
+  Suite) with capacity, amenities, and nightly rates
+- **Date-Range Availability** — search open rooms by Check-In and Check-Out
+  dates
+- **Double-Booking Prevention** — rooms with overlapping active reservations are
+  filtered out, and a database exclusion constraint makes an overlapping booking
+  impossible even under a race
+
+### Feature 2 · Reservation & Booking Management
+
+- **Guest Booking** — reserve an available room for a date range
+- **Automated Price Calculation** — nightly rate × number of nights, plus VAT
+- **Reservation Lifecycle** — `CONFIRMED` → `CHECKED_IN` → `CHECKED_OUT` /
+  `CANCELLED`
+
+### Feature 3 · Check-In, Check-Out & Incidental Billing
+
+- **Front Desk Check-In / Check-Out** — mark guests arrived and departed,
+  updating room status (`OCCUPIED` ↔ `AVAILABLE`)
+- **Extra Charges Ledger** — room service, minibar, laundry, late check-out
+- **Final Folio** — room charges + extra charges, settled at checkout
 
 ## Tech Stack
 
-- [Next.js](https://nextjs.org) (App Router) + TypeScript
-- [Tailwind CSS](https://tailwindcss.com) v4
-- [PostgreSQL](https://www.postgresql.org)
-- [node-postgres](https://node-postgres.com) (`pg`) — hand-written SQL, no ORM
-- [Xendit](https://www.xendit.co) — hosted checkout for GCash, Maya, GrabPay and cards
+[Next.js](https://nextjs.org) (App Router) · TypeScript · [Tailwind](https://tailwindcss.com) v4 ·
+[Supabase](https://supabase.com) Postgres · [`pg`](https://node-postgres.com) with hand-written SQL, no ORM ·
+[Xendit](https://www.xendit.co) hosted checkout
 
-## Getting Started
+## Setup
 
-### Prerequisites
+You need Node.js and the shared `DATABASE_URL` — ask the team. Nothing else to
+install; no Postgres on your machine.
 
-- Node.js
-- PostgreSQL running locally (or a connection string to a hosted instance)
-- A [Xendit](https://dashboard.xendit.co) account for payments — test mode needs
-  only an email, no business documents
+```bash
+npm install
+cp .env.example .env    # paste the shared DATABASE_URL in
+npm run dev
+```
 
-### Setup
+That's it. The tables and sample rooms already exist on Supabase.
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
+Payments need a Xendit key — see [Xendit](#xendit) below. Everything else
+(browsing, holding a room, looking up a booking) works without one.
 
-2. Create a database:
-   ```bash
-   createdb rjb_hotel
-   ```
+## Database
 
-3. Copy the env template and fill in your own credentials:
-   ```bash
-   cp .env.example .env
-   ```
+Shared **Supabase** Postgres. Supabase *is* Postgres, so nothing in the code is
+Supabase-specific: `pg`, raw SQL, and `db/schema.sql` as the source of truth.
 
-   `APP_URL` is the origin Xendit sends guests back to. Leave it as
-   `http://localhost:3000` for browsing; set it to your ngrok URL before
-   testing a payment (see below).
+- Use the **Session pooler** connection string (Dashboard → Connect). The
+  "direct connection" one is IPv6-only and times out on most home internet.
+- A free project **sleeps after ~a week idle** and needs a click to wake. Worth
+  remembering the morning of a demo.
+- `DATABASE_URL` is a password — full read/write on the team's data. `.env` is
+  gitignored; share it in a DM, never in a group chat, commit, or screenshot.
 
-   For payments, make your own free [Xendit](https://dashboard.xendit.co)
-   account — email only, no business documents, and ignore the "Verify Your
-   Business" banner. Stay in **Test Mode**, then take two values from the
-   dashboard:
+**Changing the schema:** edit `db/schema.sql`, run `npm run db:setup`. Never
+click tables together in the dashboard — the file is idempotent and lives in
+git, so a change there reaches everyone and can be reviewed.
 
-   - `XENDIT_SECRET_KEY` — Settings → Developers → Generate secret key, with
-     **Money-in = Write**. Shown once, so copy it immediately.
-   - `XENDIT_CALLBACK_TOKEN` — Settings → Webhooks → View Webhook
-     Verification Token.
+## Xendit
 
-   The secret key must start with `xnd_development_`; a `xnd_production_` key
-   moves real money. Never put either behind `NEXT_PUBLIC_`, which ships the
-   value to the browser, and never paste one into a chat or screenshot.
+Only needed to test a payment.
 
-   One account each rather than a shared one — an account holds a single
-   webhook URL, so on a shared account only one person would receive payment
-   events and everyone else's bookings would silently never confirm.
+Make your own free account — email only, no business documents. Stay in **Test
+Mode** and copy two values into `.env`:
 
-4. Create the tables, then load the sample rooms:
-   ```bash
-   npm run db:setup
-   npm run db:seed
-   ```
+- `XENDIT_SECRET_KEY` — Settings → Developers → Generate secret key, **Money-in
+  = Write**. Shown once.
+- `XENDIT_CALLBACK_TOKEN` — Settings → Webhooks → View Webhook Verification
+  Token.
 
-   Both are safe to re-run. `db:setup` only creates what is missing, and
-   `db:seed` upserts rooms on their room number.
+The key must start with `xnd_development_`; `xnd_production_` moves real money.
+Never put either behind `NEXT_PUBLIC_`. One account each, not a shared one — an
+account holds a single webhook URL, so on a shared account only one person would
+receive payment events.
 
-5. Confirm your Xendit key works:
-   ```bash
-   npm run xendit:check
-   ```
+Check it works with `npm run xendit:check` — creates a ₱100 test invoice,
+nothing is charged.
 
-   Creates a ₱100 test invoice — nothing is charged. Look for `GCASH` in the
-   `ewallets` line. It refuses to run against a production key.
+### Testing a payment
 
-6. Run the dev server:
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000).
-
-### Testing payments
-
-Xendit's servers cannot reach `localhost`, so payment webhooks never arrive in
-development and bookings never confirm. Run a tunnel alongside the dev server:
+Xendit can't reach `localhost`, so webhooks never arrive and bookings never
+confirm. Run a tunnel:
 
 ```bash
 ngrok http 3000
 ```
 
-Register `<the URL it prints>/api/webhooks/xendit` in Dashboard → Settings →
-Webhooks, and set `APP_URL` in `.env` to the same origin. A free ngrok account
-gets one permanent domain, so that registration is a one-time step.
+Register `<printed URL>/api/webhooks/xendit` in Settings → Webhooks (the new
+page, not the **legacy** one) and set `APP_URL` to the same origin. One-time
+step on a free ngrok domain.
 
-Switch off the **legacy** webhook page when registering — the current product
-events are only listed on the new one. And note that while the tunnel is up your
-dev server is genuinely on the public internet, database included: stop it when
-you are not testing.
-
-In test mode no real money moves. E-wallet payments land on a Xendit simulator
-page where you choose **Authorize** or **Fail** — no real GCash account needed.
-Test card numbers are listed in the Xendit dashboard.
+While the tunnel is up your dev server is on the public internet, database
+included — stop it when you're done. In test mode e-wallets land on a simulator
+where you pick **Authorize** or **Fail**.
 
 ## Project Structure
 
 ```
-app/                          Next.js App Router pages
-components/                   UI components (guest + admin)
-lib/db.ts                     Postgres connection pool + query helpers
-lib/types.ts                  TypeScript mirrors of the database enums
-lib/rooms.ts                  Catalog + availability query
-lib/pricing.ts                Nightly rate -> nights, VAT, total
-lib/money.ts                  Peso strings and integer centavos
-lib/reservations.ts           Holds, confirmation codes, hold expiry
-lib/payments.ts               Xendit invoices + webhook token check
-lib/billing.ts                Payments against a reservation
-app/api/webhooks/xendit/      The only place a booking becomes CONFIRMED
-db/schema.sql                 Data model (Room, Reservation, Charge, Payment)
-db/seed.sql                   Sample rooms
-scripts/db.mjs                Runs a .sql file against DATABASE_URL
+app/                     Pages (App Router)
+components/              UI (guest + admin)
+app/api/webhooks/xendit/ The only place a booking becomes CONFIRMED
+
+lib/db.ts                Connection pool + query helpers
+lib/rooms.ts             Catalog + availability query
+lib/reservations.ts      Holds, confirmation codes, hold expiry
+lib/pricing.ts           Rate -> nights, VAT, total
+lib/money.ts             Peso strings and integer centavos
+lib/payments.ts          Xendit invoices + webhook token check
+lib/billing.ts           Payments against a reservation
+lib/schemas.ts           Every zod schema that guards a write
+lib/validate.ts          One way to validate untrusted input
+lib/result.ts            A thrown error, as a value
+lib/types.ts             TypeScript mirrors of the database enums
+
+db/schema.sql            Data model (Room, Reservation, Charge, Payment)
+db/seed.sql              Sample rooms
+scripts/db.mjs           Applies a .sql file to Supabase
 ```
 
 ## How a booking works
 
-1. The guest picks a room and dates and submits the checkout form.
-2. The server recomputes the price from the rate in the database — a total
-   posted by the browser is never trusted — and writes the reservation as
-   `PENDING` with a 15-minute hold. A held room is unavailable to everyone else.
-3. The guest is redirected to a Xendit hosted checkout page. Card details never
-   touch this server.
-4. Xendit POSTs to `/api/webhooks/xendit`. That handler authenticates the
-   request, promotes the booking to `CONFIRMED` and records the payment.
-5. The guest lands back on `/booking/<code>`, which reports whatever status the
-   webhook already wrote.
+1. Guest picks a room and dates, submits the form.
+2. Server **recomputes the price** from the database rate — a total posted by
+   the browser is never trusted — and writes the reservation as `PENDING` with a
+   15-minute hold. A held room is unavailable to everyone else.
+3. Guest is redirected to Xendit's hosted checkout. Card details never touch
+   this server.
+4. Xendit POSTs to `/api/webhooks/xendit`, which authenticates the request,
+   promotes the booking to `CONFIRMED`, and records the payment.
+5. Guest lands on `/booking/<code>`, which shows whatever the webhook wrote.
 
-Two things worth knowing before changing any of this:
+Two things to know before changing any of it:
 
-- **The success redirect is not proof of payment.** It is a URL anyone can type.
+- **The success redirect is not proof of payment.** Anyone can type that URL.
   Only the webhook confirms a booking.
 - **The reservation exists before the money moves.** Charging first would let
-  another guest take the room mid-payment, leaving someone who has paid for a
-  room that is gone.
+  another guest take the room mid-payment.
 
-A hold whose guest never came back is released automatically — the check runs on
-the availability query, so no cron job is involved.
+Abandoned holds are released automatically — the check runs on the availability
+query, so there's no cron job.
