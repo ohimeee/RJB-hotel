@@ -57,5 +57,5 @@ export const checkoutHref = (roomId: string, query: RoomQuery): string => {
     params.set("checkIn", query.checkIn);
     params.set("checkOut", query.checkOut);
   }
-  return `/booking/review?${params.toString()}`;
+  return `/booking/checkout?${params.toString()}`;
 };

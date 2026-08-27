@@ -23,11 +23,13 @@ const BookingConfirmationPage = async ({
   params,
   searchParams,
 }: {
-  params: Promise<{ code: string }>;
+  params: Promise<{ confirmationCode: string }>;
   searchParams: Promise<{ payment?: string | string[] }>;
 }) => {
-  const { code } = await params;
-  const reservation = await getReservationByCode(decodeURIComponent(code));
+  const { confirmationCode } = await params;
+  const reservation = await getReservationByCode(
+    decodeURIComponent(confirmationCode),
+  );
 
   if (!reservation) notFound();
 

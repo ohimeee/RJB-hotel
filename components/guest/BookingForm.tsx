@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import {
   startBooking,
   type BookingState,
-} from "@/app/(guest)/booking/review/actions";
+} from "@/app/(guest)/booking/checkout/actions";
 
 /**
  * Wraps the checkout page in the form that posts to `startBooking`.

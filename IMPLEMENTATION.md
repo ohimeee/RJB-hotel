@@ -12,7 +12,7 @@ How we get from the current scaffold to the three features in the spec (`hotel.p
 
 **Design layer done:** the guest UI now has a real boutique look — orange accent, `lucide-react` icons, Prettier with `prettier-plugin-tailwindcss` for class sorting. Components: `RoomCard`, `InfoBar`, `NavLink` (active-route highlighting), `BookingCard`, `StayDetails`, `GuestDetails`.
 
-**Guest booking done (2026-08-27):** the whole write path exists and is verified end to end — hold, hosted checkout, webhook confirmation, confirmation page, code lookup. `Payment` and the booking columns are in the schema, double-booking is refused by a Postgres exclusion constraint, and expired holds release themselves. Guest-side files: `lib/reservations.ts`, `lib/payments.ts`, `lib/billing.ts`, `app/(guest)/booking/review/actions.ts`, `app/api/webhooks/xendit/route.ts`, `app/(guest)/booking/[code]/page.tsx`, `app/(guest)/find-booking/page.tsx`.
+**Guest booking done (2026-08-27):** the whole write path exists and is verified end to end — hold, hosted checkout, webhook confirmation, confirmation page, code lookup. `Payment` and the booking columns are in the schema, double-booking is refused by a Postgres exclusion constraint, and expired holds release themselves. Guest-side files: `lib/reservations.ts`, `lib/payments.ts`, `lib/billing.ts`, `app/(guest)/booking/checkout/actions.ts`, `app/api/webhooks/xendit/route.ts`, `app/(guest)/booking/[confirmationCode]/page.tsx`, `app/(guest)/find-booking/page.tsx`.
 
 **Still missing:** **staff auth (Phase 1) and the entire admin side.** `/admin/*` is unguarded and hardcoded, and there are no front-desk actions — check-in, check-out, incidental charges, folio. `InfoBar` is still static, so the availability query works but nothing sends it dates. The design pass also deleted `app/login/page.tsx`, `components/admin/Topbar.tsx`, and `components/guest/SearchBar.tsx`, and moved the dashboard from `app/admin/dashboard/page.tsx` to `app/admin/page.tsx`.
 
@@ -45,8 +45,8 @@ How we get from the current scaffold to the three features in the spec (`hotel.p
 | `/` | public | styled, hardcoded | Catalog + availability search |
 | `/rooms/[id]` | public | **missing** | Room detail |
 | `/amenities` | public | **missing** | Static page — the nav links to it |
-| `/booking/review` | public | exists as `/my-bookings` | Checkout — review & confirm |
-| `/booking/[code]` | public | **missing** | Confirmation + lookup by code |
+| `/booking/checkout` | public | exists as `/my-bookings` | Checkout — review & confirm |
+| `/booking/[confirmationCode]` | public | **missing** | Confirmation + lookup by code |
 | `/login` | public | **deleted, must rebuild** | Staff login |
 | `/admin` | staff | styled, hardcoded | Dashboard |
 | `/admin/rooms` | staff | placeholder | Room CRUD |
@@ -161,7 +161,7 @@ Two markup fixes while wiring: `RoomCard`'s "Book Now" is a `<div>`, so it is no
 Small, and everything else builds on it.
 
 - [x] Point `Sidebar`'s Dashboard link at `/admin`
-- [x] Rename `app/(guest)/my-bookings/` → `app/(guest)/booking/review/`
+- [x] Rename `app/(guest)/my-bookings/` → `app/(guest)/booking/checkout/`
 - [x] Drop the "My Bookings" nav link — checkout is a step in a flow, not a destination (now "Find booking" → `/find-booking`)
 - [x] Standardise on **₱** in one `formatMoney()` helper — `BookingCard`'s `$…USD` is the outlier (Section 12)
 
@@ -523,8 +523,8 @@ The database then refuses an overlapping row regardless of what the app does. Re
 
 - `lib/pricing.ts` — new; `calculateQuote()`, `TAX_RATE`
 - `lib/reservations.ts` — new; `createReservation()`, `transitionReservation()`, `generateConfirmationCode()`
-- `app/(guest)/booking/review/actions.ts` — new; confirm-reservation action
-- `app/(guest)/booking/[code]/page.tsx` — new; confirmation + lookup
+- `app/(guest)/booking/checkout/actions.ts` — new; confirm-reservation action
+- `app/(guest)/booking/[confirmationCode]/page.tsx` — new; confirmation + lookup
 - `app/admin/reservations/page.tsx` — edit; list + status filter
 
 ---
