@@ -5,6 +5,7 @@ import {
   type XenditInvoiceEvent,
 } from "@/lib/payments";
 import { confirmReservation, getReservation } from "@/lib/reservations";
+import { attempt } from "@/lib/result";
 
 /**
  * The only place a booking becomes CONFIRMED.
@@ -23,13 +24,15 @@ export const POST = async (request: Request): Promise<Response> => {
     return new Response("unauthorized", { status: 401 });
   }
 
-  let event: XenditInvoiceEvent;
+  const parsed = await attempt(
+    () => request.json() as Promise<XenditInvoiceEvent>,
+  );
 
-  try {
-    event = (await request.json()) as XenditInvoiceEvent;
-  } catch {
+  if (!parsed.ok) {
     return new Response("bad request", { status: 400 });
   }
+
+  const event = parsed.value;
 
   // "PAID" — not COMPLETED, not SUCCEEDED. Confirmed against a real test
   // invoice on 2026-08-27. Anything else (EXPIRED, PENDING) is acknowledged so
