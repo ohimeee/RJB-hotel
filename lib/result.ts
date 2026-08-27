@@ -26,17 +26,3 @@ export const attempt = async <T>(fn: () => Promise<T>): Promise<Result<T>> => {
     return { ok: false, error };
   }
 };
-
-/**
- * The synchronous twin.
- *
- * `jwt.verify` reports a bad or expired token by throwing, so the session check
- * in lib/auth.ts needs a sync version of the same idea.
- */
-export const attemptSync = <T>(fn: () => T): Result<T> => {
-  try {
-    return { ok: true, value: fn() };
-  } catch (error) {
-    return { ok: false, error };
-  }
-};

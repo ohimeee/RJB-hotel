@@ -59,5 +59,3 @@ export const bookingSchema = z
     message: `Stays are capped at ${MAX_NIGHTS} nights — call the front desk for longer.`,
     path: ["checkOut"],
   });
-
-export type BookingInput = z.infer<typeof bookingSchema>;
