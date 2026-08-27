@@ -33,6 +33,13 @@ DO $$ BEGIN
     ('CASH', 'CARD', 'GCASH', 'MAYA', 'GRABPAY', 'TRANSFER');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+-- Which department an incidental charge came from. The front desk posts most
+-- of them, so it is the fallback rather than a separate "unknown".
+DO $$ BEGIN
+  CREATE TYPE "ChargeDepartment" AS ENUM
+    ('FNB', 'HOUSEKEEPING', 'TRANSPORT', 'FRONT_DESK', 'OTHER');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- Keeps "updatedAt" honest without every UPDATE having to remember it.
 CREATE OR REPLACE FUNCTION set_updated_at() RETURNS trigger AS $$
 BEGIN
@@ -79,6 +86,11 @@ CREATE TABLE IF NOT EXISTS "Reservation" (
   "taxAmount"        DECIMAL(10,2) NOT NULL,
   -- Set while the guest is at the gateway; NULL once the stay is confirmed.
   "holdExpiresAt"    TIMESTAMP(3),
+  -- When the guest actually arrived and left, as opposed to the dates they
+  -- booked. A late check-out is the gap between "checkOut" and "checkedOutAt",
+  -- and that gap is what a late fee is argued over.
+  "checkedInAt"      TIMESTAMP(3),
+  "checkedOutAt"     TIMESTAMP(3),
   "createdAt"        TIMESTAMP(3) NOT NULL DEFAULT now(),
   "updatedAt"        TIMESTAMP(3) NOT NULL DEFAULT now(),
 
@@ -87,10 +99,19 @@ CREATE TABLE IF NOT EXISTS "Reservation" (
   CONSTRAINT "Reservation_dates_check" CHECK ("checkOut" > "checkIn")
 );
 
+-- Incidentals posted against a stay: minibar, laundry, an airport transfer.
+--
+-- Amounts here are treated as VAT-inclusive, unlike the room charge which has
+-- VAT added on top. See IMPLEMENTATION.md, Section 13.
 CREATE TABLE IF NOT EXISTS "Charge" (
   "id"            TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
   "reservationId" TEXT NOT NULL REFERENCES "Reservation"("id") ON DELETE RESTRICT ON UPDATE CASCADE,
   "description"   TEXT NOT NULL,
+  "department"    "ChargeDepartment" NOT NULL DEFAULT 'OTHER',
+  -- Who put this on the bill. Free text until staff accounts exist; it becomes
+  -- a reference to that table once they do, so a disputed charge can be traced
+  -- to a person rather than a pair of initials somebody typed.
+  "postedBy"      TEXT,
   "amount"        DECIMAL(10,2) NOT NULL,
   "createdAt"     TIMESTAMP(3) NOT NULL DEFAULT now()
 );
@@ -104,7 +125,10 @@ CREATE TABLE IF NOT EXISTS "Payment" (
   "method"            "PaymentMethod" NOT NULL,
   "paidAt"            TIMESTAMP(3) NOT NULL DEFAULT now(),
   "providerInvoiceId" TEXT,
-  "providerEventId"   TEXT
+  "providerEventId"   TEXT,
+  -- Last four digits only, for the line the folio prints. Never the full
+  -- number: the card is entered on Xendit's page and never reaches this server.
+  "cardLast4"         TEXT
 );
 
 -- Bring an already-created database up to the definitions above. The CREATE
@@ -145,6 +169,19 @@ ALTER TABLE "Reservation" ALTER COLUMN "guestCount"       SET NOT NULL;
 ALTER TABLE "Reservation" ALTER COLUMN "taxAmount"        SET NOT NULL;
 
 ALTER TABLE "Reservation" ALTER COLUMN "status" SET DEFAULT 'PENDING';
+
+-- The folio columns, for tables that predate them. All nullable or defaulted,
+-- so this runs cleanly whether or not the tables hold rows.
+ALTER TABLE "Charge"      ADD COLUMN IF NOT EXISTS "department" "ChargeDepartment" NOT NULL DEFAULT 'OTHER';
+ALTER TABLE "Charge"      ADD COLUMN IF NOT EXISTS "postedBy"     TEXT;
+ALTER TABLE "Reservation" ADD COLUMN IF NOT EXISTS "checkedInAt"  TIMESTAMP(3);
+ALTER TABLE "Reservation" ADD COLUMN IF NOT EXISTS "checkedOutAt" TIMESTAMP(3);
+ALTER TABLE "Payment"     ADD COLUMN IF NOT EXISTS "cardLast4"    TEXT;
+
+-- A folio reads every charge on one reservation, so that is the lookup to
+-- support. Ordered by time, because a bill is read in the order it was run up.
+CREATE INDEX IF NOT EXISTS "Charge_reservationId_createdAt_idx"
+  ON "Charge" ("reservationId", "createdAt");
 
 -- Availability search filters by room and date range, in that order.
 CREATE INDEX IF NOT EXISTS "Reservation_roomId_checkIn_checkOut_idx"
