@@ -43,12 +43,23 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
    cp .env.example .env
    ```
 
-   For payments, add your Xendit **test** credentials from the dashboard:
-   `XENDIT_SECRET_KEY` (Settings → Developers → generate a secret key with
-   Money-in = Write) and `XENDIT_CALLBACK_TOKEN` (Settings → Webhooks → view
-   verification token). The secret key must start with `xnd_development_` — a
-   `xnd_production_` key moves real money. Never put either behind
-   `NEXT_PUBLIC_`; that ships the value to the browser.
+   For payments, make your own free [Xendit](https://dashboard.xendit.co)
+   account — email only, no business documents, and ignore the "Verify Your
+   Business" banner. Stay in **Test Mode**, then take two values from the
+   dashboard:
+
+   - `XENDIT_SECRET_KEY` — Settings → Developers → Generate secret key, with
+     **Money-in = Write**. Shown once, so copy it immediately.
+   - `XENDIT_CALLBACK_TOKEN` — Settings → Webhooks → View Webhook
+     Verification Token.
+
+   The secret key must start with `xnd_development_`; a `xnd_production_` key
+   moves real money. Never put either behind `NEXT_PUBLIC_`, which ships the
+   value to the browser, and never paste one into a chat or screenshot.
+
+   One account each rather than a shared one — an account holds a single
+   webhook URL, so on a shared account only one person would receive payment
+   events and everyone else's bookings would silently never confirm.
 
 4. Create the tables, then load the sample rooms:
    ```bash
@@ -59,7 +70,15 @@ Lightweight hotel reservation and room management app for boutique hotels, inns,
    Both are safe to re-run. `db:setup` only creates what is missing, and
    `db:seed` upserts rooms on their room number.
 
-5. Run the dev server:
+5. Confirm your Xendit key works:
+   ```bash
+   npm run xendit:check
+   ```
+
+   Creates a ₱100 test invoice — nothing is charged. Look for `GCASH` in the
+   `ewallets` line. It refuses to run against a production key.
+
+6. Run the dev server:
    ```bash
    npm run dev
    ```
