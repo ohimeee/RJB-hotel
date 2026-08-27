@@ -12,6 +12,33 @@ export const toMoney = (value: string): string => {
   return `${whole}.${cents.slice(0, 2).padEnd(2, "0")}`;
 };
 
+/**
+ * "8900.00" -> 890000. Arithmetic on pesos happens in integer centavos, so the
+ * float error that `0.1 + 0.2` is famous for never reaches a bill.
+ *
+ * `Number()` is safe here and only here: the value is already scaled to a whole
+ * number of centavos, and DECIMAL(10,2) tops out far below Number.MAX_SAFE_INTEGER.
+ */
+export const toCentavos = (value: string): number => {
+  const raw = toMoney(value);
+  const negative = raw.startsWith("-");
+  const [whole = "0", cents = "00"] = raw.replace("-", "").split(".");
+
+  const total = Number(whole) * 100 + Number(cents);
+
+  return negative ? -total : total;
+};
+
+/** 890000 -> "8900.00". The inverse of toCentavos. */
+export const fromCentavos = (centavos: number): string => {
+  const negative = centavos < 0;
+  const absolute = Math.abs(centavos);
+  const whole = Math.trunc(absolute / 100);
+  const cents = String(absolute % 100).padStart(2, "0");
+
+  return `${negative ? "-" : ""}${whole}.${cents}`;
+};
+
 const groupDigits = (digits: string): string =>
   digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -24,7 +51,8 @@ export const formatPeso = (value: string): string => {
   const negative = raw.startsWith("-");
   const [whole = "0", cents = "00"] = raw.replace("-", "").split(".");
 
-  const body = cents === "00" ? groupDigits(whole) : `${groupDigits(whole)}.${cents}`;
+  const body =
+    cents === "00" ? groupDigits(whole) : `${groupDigits(whole)}.${cents}`;
 
   return `${negative ? "-" : ""}₱${body}`;
 };

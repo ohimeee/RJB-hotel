@@ -1,15 +1,8 @@
-import { MoveRight } from "lucide-react";
-
+import ConfirmButton from "@/components/guest/ConfirmButton";
 import type { Quote } from "@/lib/pricing";
 import { typeLabel, type RoomCardData } from "@/lib/rooms";
 
-const BookingCard = ({
-  room,
-  quote,
-}: {
-  room: RoomCardData;
-  quote: Quote;
-}) => {
+const BookingCard = ({ room, quote }: { room: RoomCardData; quote: Quote }) => {
   return (
     <div className="mt-5 flex w-full flex-col">
       <div className="aspect-2/1 overflow-hidden">
@@ -68,10 +61,7 @@ const BookingCard = ({
             </span>
           </div>
         </div>
-        <div className="my-5 flex items-center justify-between bg-orange-500 p-5 font-bold text-white">
-          <span>Confirm reservation</span>
-          <MoveRight className="size-5" />
-        </div>
+        <ConfirmButton />
       </div>
     </div>
   );

@@ -20,14 +20,29 @@ if (!connectionString) {
   process.exit(1);
 }
 
-const sql = readFileSync(file, "utf8");
+// node-postgres sends a whole script as one simple query, and Postgres wraps
+// that in a single implicit transaction. Usually what we want — a failure
+// rolls the file back.
+//
+// `ALTER TYPE ... ADD VALUE` is the exception. Postgres refuses to *use* a new
+// enum label in the same transaction that added it, so the statement adding
+// 'PENDING' and the exclusion constraint whose predicate names it cannot ship
+// together. A `-- @separate` line on its own splits the file into chunks that
+// each run as their own transaction, in order.
+const chunks = readFileSync(file, "utf8")
+  .split(/^--[ \t]*@separate[ \t]*$/m)
+  .map((chunk) => chunk.trim())
+  .filter(Boolean);
+
 const client = new Client({ connectionString });
 
 try {
   await client.connect();
-  // One statement per file would defeat the point; node-postgres sends the
-  // whole script as a single implicit transaction, so a failure rolls back.
-  await client.query(sql);
+
+  for (const chunk of chunks) {
+    await client.query(chunk);
+  }
+
   console.log(`Applied ${file}`);
 } catch (error) {
   console.error(`Failed to apply ${file}:`);

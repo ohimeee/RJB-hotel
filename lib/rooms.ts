@@ -2,6 +2,7 @@ import { query, queryOne } from "@/lib/db";
 import { formatPeso, toMoney } from "@/lib/money";
 import type { RoomStatus, RoomType } from "@/lib/types";
 import type { RoomQuery } from "@/lib/search";
+import { releaseExpiredHolds } from "@/lib/reservations";
 
 /**
  * What a room looks like once it crosses into a component. `nightlyRate` is a
@@ -59,6 +60,12 @@ const toRoomCardData = (room: RoomRow): RoomCardData => ({
  * A stay only blocks a room while it is live — CANCELLED and CHECKED_OUT stays
  * are ignored.
  *
+ * PENDING counts as live. It is a room held while a guest is at the payment
+ * gateway, and leaving it out of the list below would let two guests hold the
+ * same room at once, both pay, and one of them end up in a refund conversation.
+ * The hold exists precisely to stop that. Expired holds are released first, so
+ * a checkout somebody abandoned does not keep a room off the market.
+ *
  * With no date range this is the plain catalog — a first-time visitor should
  * see rooms, not an empty page demanding dates.
  *
@@ -72,6 +79,10 @@ export const findAvailableRooms = async ({
   checkOut,
   guests,
 }: RoomQuery): Promise<RoomCardData[]> => {
+  // Cheap on almost every call — the guarded UPDATE matches nothing once the
+  // holds are clear — and it means correct behaviour needs no cron job.
+  await releaseExpiredHolds();
+
   const hasRange = Boolean(checkIn && checkOut);
 
   // The whole date filter hangs off `$2 IS NOT NULL`, so one statement covers
@@ -87,7 +98,7 @@ export const findAvailableRooms = async ({
           SELECT 1
           FROM "Reservation" res
           WHERE res."roomId" = r."id"
-            AND res."status" IN ('CONFIRMED', 'CHECKED_IN')
+            AND res."status" IN ('PENDING', 'CONFIRMED', 'CHECKED_IN')
             AND res."checkIn" < $3::date
             AND res."checkOut" > $2::date
         )

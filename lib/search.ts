@@ -49,10 +49,13 @@ export const parseSearch = (raw: RawSearchParams): RoomQuery => {
  * default stay when the catalog was browsed without dates.
  */
 export const checkoutHref = (roomId: string, query: RoomQuery): string => {
-  const params = new URLSearchParams({ room: roomId, guests: String(query.guests) });
+  const params = new URLSearchParams({
+    room: roomId,
+    guests: String(query.guests),
+  });
   if (query.checkIn && query.checkOut) {
     params.set("checkIn", query.checkIn);
     params.set("checkOut", query.checkOut);
   }
-  return `/my-bookings?${params.toString()}`;
+  return `/booking/review?${params.toString()}`;
 };
