@@ -1,16 +1,16 @@
-import Link from "next/link";
+import NavLink from "@/components/NavLink";
 
 const Sidebar = () => {
   return (
-    <aside className="min-h-screen w-64 bg-gray-900 p-5 text-white">
+    <aside className="min-h-screen w-64 bg-white p-5 text-black border-r-2 border-black">
       <h2 className="mb-8 text-2xl font-bold">Admin</h2>
 
       <div className="flex flex-col gap-4">
-        <Link href="/admin">Dashboard</Link>
+        <NavLink href="/admin">Dashboard</NavLink>
 
-        <Link href="/admin/rooms">Rooms</Link>
+        <NavLink href="/admin/rooms">Rooms</NavLink>
 
-        <Link href="/admin/reservations">Reservations</Link>
+        <NavLink href="/admin/reservations">Reservations</NavLink>
       </div>
     </aside>
   );

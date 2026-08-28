@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import NavLink from "@/components/guest/NavLink";
+import NavLink from "@/components/NavLink";
 import StayDetails from "@/components/guest/StayDetails";
 import { formatPeso } from "@/lib/money";
 import { getReservationByCode } from "@/lib/reservations";

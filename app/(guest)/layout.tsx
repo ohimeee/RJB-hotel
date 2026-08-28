@@ -1,4 +1,4 @@
-import Navbar from "@/components/guest/Navbar";
+import Navbar from "@/components/guest/GuestNavbar";
 
 const GuestLayout = ({
   children,

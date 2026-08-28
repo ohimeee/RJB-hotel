@@ -1,4 +1,4 @@
-import NavLink from "@/components/guest/NavLink";
+import NavLink from "@/components/NavLink";
 
 const Navbar = () => {
   return (
